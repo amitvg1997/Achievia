@@ -217,7 +217,7 @@ fun TaskCard(task: Task) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${task.hoursLogged}h / ${task.totalHours}h",
+                        text = "${task.hoursLogged}h / ${task.allocatedTime}h",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )
