@@ -28,8 +28,11 @@ import kotlinx.coroutines.launch
 fun GoalsScreen(
     onNavigateToCreateGoal: () -> Unit,
     onNavigateToEditGoal: (String) -> Unit,
-    onLogout: () -> Unit,
     onNavigateToGoalDetail: (String) -> Unit,
+    onNavigateToFriends: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     val goals by GoalRepository.goals.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -56,19 +59,28 @@ fun GoalsScreen(
                 NavigationDrawerItem(
                     label = { Text("Friends") },
                     selected = false,
-                    onClick = { /* TODO */ },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToFriends()
+                    },
                     icon = { Icon(Icons.Default.Group, contentDescription = null) }
                 )
                 NavigationDrawerItem(
                     label = { Text("Notifications") },
                     selected = false,
-                    onClick = { /* TODO */ },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToNotifications()
+                    },
                     icon = { Icon(Icons.Default.Notifications, contentDescription = null) }
                 )
                 NavigationDrawerItem(
                     label = { Text("Settings") },
                     selected = false,
-                    onClick = { /* TODO */ },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToSettings()
+                    },
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) }
                 )
                 Spacer(modifier = Modifier.weight(1f))
