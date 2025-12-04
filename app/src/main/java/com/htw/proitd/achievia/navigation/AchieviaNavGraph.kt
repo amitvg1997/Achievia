@@ -5,10 +5,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.htw.proitd.achievia.ui.screens.GoalDetailScreen
+import com.htw.proitd.achievia.ui.screens.GoalInputScreen
 import com.htw.proitd.achievia.ui.screens.GoalsScreen
 import com.htw.proitd.achievia.ui.screens.LoginScreen
+import com.htw.proitd.achievia.ui.screens.NotificationsScreen
 import com.htw.proitd.achievia.ui.screens.RegisterScreen
-import com.htw.proitd.achievia.ui.screens.GoalInputScreen
+import com.htw.proitd.achievia.ui.screens.FriendsScreen
+import com.htw.proitd.achievia.ui.screens.SettingsScreen
 
 @Composable
 fun AchieviaNavGraph(navController: NavHostController) {
@@ -34,6 +37,9 @@ fun AchieviaNavGraph(navController: NavHostController) {
                 onNavigateToCreateGoal = { navController.navigate(Screen.CreateGoal.route) },
                 onNavigateToEditGoal = { goalId -> navController.navigate(Screen.EditGoal.createRoute(goalId)) },
                 onNavigateToGoalDetail = { goalId -> navController.navigate(Screen.GoalDetail.createRoute(goalId)) },
+                onNavigateToFriends = { navController.navigate(Screen.Friends.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) // Clear back stack
@@ -63,6 +69,24 @@ fun AchieviaNavGraph(navController: NavHostController) {
             val goalId = backStackEntry.arguments?.getString("goalId")
             GoalDetailScreen(
                 goalId = goalId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Friends.route) {
+            FriendsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Notifications.route) {
+            NotificationsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
