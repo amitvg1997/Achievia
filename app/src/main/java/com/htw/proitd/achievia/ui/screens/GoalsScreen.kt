@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 fun GoalsScreen(
     onNavigateToCreateGoal: () -> Unit,
     onNavigateToEditGoal: (String) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToGoalDetail: (String) -> Unit,
 ) {
     val goals by GoalRepository.goals.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -130,7 +131,7 @@ fun GoalsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(goals) { goal ->
-                        GoalItem(goal = goal, onEditClick = { onNavigateToEditGoal(goal.id) })
+                        GoalItem(goal = goal, onClick = { onNavigateToGoalDetail(goal.id) },onEditClick = { onNavigateToEditGoal(goal.id) })
                     }
                 }
             }
@@ -162,9 +163,11 @@ fun DrawerHeader() {
 }
 
 @Composable
-fun GoalItem(goal: Goal, onEditClick: () -> Unit) {
+fun GoalItem(goal: Goal, onClick: () -> Unit, onEditClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {

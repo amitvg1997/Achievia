@@ -22,5 +22,6 @@ data class Task(
     val title: String,
     val description: String = "",
     val isCompleted: Boolean = false,
-    val allocatedTime: String = "" // e.g., "10h allocated"
+    val allocatedTime: String = "", // e.g., "10h allocated"
+    val hoursLogged: Double = 0.0, // Hours logged for this task
 )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.htw.proitd.achievia.ui.screens.GoalDetailScreen
 import com.htw.proitd.achievia.ui.screens.GoalsScreen
 import com.htw.proitd.achievia.ui.screens.LoginScreen
 import com.htw.proitd.achievia.ui.screens.RegisterScreen
@@ -32,6 +33,7 @@ fun AchieviaNavGraph(navController: NavHostController) {
             GoalsScreen(
                 onNavigateToCreateGoal = { navController.navigate(Screen.CreateGoal.route) },
                 onNavigateToEditGoal = { goalId -> navController.navigate(Screen.EditGoal.createRoute(goalId)) },
+                onNavigateToGoalDetail = { goalId -> navController.navigate(Screen.GoalDetail.createRoute(goalId)) },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) // Clear back stack
@@ -49,6 +51,17 @@ fun AchieviaNavGraph(navController: NavHostController) {
         ) { backStackEntry ->
             val goalId = backStackEntry.arguments?.getString("goalId")
             GoalInputScreen(
+                goalId = goalId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+
+        composable(
+            route = Screen.GoalDetail.route
+        ) { backStackEntry ->
+            val goalId = backStackEntry.arguments?.getString("goalId")
+            GoalDetailScreen(
                 goalId = goalId,
                 onNavigateBack = { navController.popBackStack() }
             )
