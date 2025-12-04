@@ -8,4 +8,8 @@ sealed class Screen(val route: String) {
     object EditGoal : Screen("edit_goal/{goalId}") {
         fun createRoute(goalId: String) = "edit_goal/$goalId"
     }
+
+    object GoalDetail : Screen("goal_detail/{goalId}") {
+        fun createRoute(goalId: String) = "goal_detail/$goalId"
+    }
 }
