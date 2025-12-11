@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "9394981058",
+    "project_id": "achievia-a9f30",
+    "storage_bucket": "achievia-a9f30.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9394981058:android:5fb3b552f34a0c2b26d35b",
+        "android_client_info": {
+          "package_name": "com.htw.proitd.achievia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCg6RcqonXnvEdbkJxh15edzEFkonkGT7k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
