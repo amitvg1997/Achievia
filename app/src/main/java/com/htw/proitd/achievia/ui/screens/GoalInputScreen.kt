@@ -166,8 +166,8 @@ fun TaskItem(task: Task, onDelete: () -> Unit) {
                 if (task.description.isNotEmpty()) {
                     Text(text = task.description, fontSize = 12.sp, color = Color.Gray)
                 }
-                if (task.allocatedTime.isNotEmpty()) {
-                    Text(text = task.allocatedTime, fontSize = 12.sp, color = Color.Gray)
+                if (task.allocatedHours > 0f) {
+                    Text(text = "${task.allocatedHours}h allocated", fontSize = 12.sp, color = Color.Gray)
                 }
             }
             IconButton(onClick = onDelete) {
@@ -205,7 +205,7 @@ fun AddTaskDialog(onDismiss: () -> Unit, onAddTask: (Task) -> Unit) {
                 OutlinedTextField(
                     value = allocatedTime,
                     onValueChange = { allocatedTime = it },
-                    label = { Text("Time Allocation (e.g. 2h)") },
+                    label = { Text("Time Allocation (e.g. 2.5)") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -214,7 +214,7 @@ fun AddTaskDialog(onDismiss: () -> Unit, onAddTask: (Task) -> Unit) {
             Button(
                 onClick = {
                     if (title.isNotEmpty()) {
-                        onAddTask(Task(title = title, description = description, allocatedTime = allocatedTime))
+                        onAddTask(Task(title = title, description = description, allocatedHours = allocatedTime.toFloatOrNull() ?: 0f))
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F43))
@@ -242,28 +242,29 @@ fun GoalInputScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun EditGoalInputScreenPreview() {
-    // This sets up a preview for the "Edit Goal" state
-    val sampleGoal = Goal(
-        id = "preview-id",
-        title = "Learn Jetpack Compose",
-        description = "Finish all the official tutorials and build a sample app.",
-        progress = 40,
-        tasks = listOf(
-            Task(title = "Complete Basic Layouts Codelab", isCompleted = true),
-            Task(title = "State in Compose", isCompleted = true),
-            Task(title = "Navigation Codelab", isCompleted = false)
+    val sampleGoal = remember {
+        Goal(
+            id = "preview-id-edit",
+            title = "Learn Jetpack Compose",
+            description = "Finish all the official tutorials and build a sample app.",
+            progress = 40,
+            tasks = listOf(
+                Task(title = "Complete Basic Layouts Codelab", allocatedHours = 5f, loggedHours = 5f, isCompleted = true),
+                Task(title = "State in Compose", allocatedHours = 3f, loggedHours = 3f, isCompleted = true),
+                Task(title = "Navigation Codelab", allocatedHours = 4f, isCompleted = false)
+            )
         )
-    )
+    }
 
-    // We need to add the goal to the repository so the screen can find it.
-    // Note: Previews run in a sandbox, so this won't affect your actual app data.
-    GoalRepository.addGoal(sampleGoal)
+    LaunchedEffect(sampleGoal.id) {
+        GoalRepository.deleteGoal(sampleGoal.id) // ensure clean state for preview
+        GoalRepository.addGoal(sampleGoal)
+    }
 
     AchieviaTheme {
         GoalInputScreen(
-            goalId = "preview-id",
+            goalId = sampleGoal.id,
             onNavigateBack = {}
         )
     }
 }
-

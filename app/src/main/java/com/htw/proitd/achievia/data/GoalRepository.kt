@@ -20,8 +20,8 @@ object GoalRepository {
                 progress = 75,
                 sharedWith = listOf("Sarah Johnson"),
                 tasks = listOf(
-                    Task(title = "Learn Hooks", description = "Complete useState, useEffect", allocatedTime = "10h allocated"),
-                    Task(title = "Build Dashboard", description = "Create responsive admin dashboard", allocatedTime = "20h allocated")
+                    Task(title = "Learn Hooks", description = "Complete useState, useEffect", allocatedHours = 10f, loggedHours = 7.5f),
+                    Task(title = "Build Dashboard", description = "Create responsive admin dashboard", allocatedHours = 20f, loggedHours = 15f)
                 )
             ),
             Goal(

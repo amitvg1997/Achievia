@@ -17,10 +17,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
 import com.htw.proitd.achievia.model.Goal
+import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -256,6 +258,22 @@ fun CircularProgress(percentage: Int) {
             text = "$percentage%",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GoalsScreenPreview() {
+    AchieviaTheme {
+        GoalsScreen(
+            onNavigateToCreateGoal = {},
+            onNavigateToEditGoal = {},
+            onNavigateToGoalDetail = {},
+            onNavigateToFriends = {},
+            onNavigateToNotifications = {},
+            onNavigateToSettings = {},
+            onLogout = {}
         )
     }
 }
