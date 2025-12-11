@@ -1,60 +1,45 @@
 package com.htw.proitd.achievia.data
 
 import com.htw.proitd.achievia.model.Goal
-import com.htw.proitd.achievia.model.Task
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-object GoalRepository {
-    private val _goals = MutableStateFlow<List<Goal>>(emptyList())
-    val goals: StateFlow<List<Goal>> = _goals.asStateFlow()
+/**
+ * Repository interface the UI will depend on.
+ * Can be backed by Firebase or any other source.
+ */
+interface GoalRepository {
+    fun observeGoals(ownerUserId: String? = null): Flow<List<Goal>>
+    suspend fun getGoal(goalId: String): Goal?
+    suspend fun addGoal(goal: Goal)
+    suspend fun updateGoal(goal: Goal)
+    suspend fun deleteGoal(goalId: String)
+}
 
-    init {
-        // Seed with some dummy data
-        _goals.value = listOf(
-            Goal(
-                title = "Complete React Course",
-                description = "Finish all modules and build final project",
-                progress = 75,
-                sharedWith = listOf("Sarah Johnson"),
-                tasks = listOf(
-                    Task(title = "Learn Hooks", description = "Complete useState, useEffect", allocatedHours = 10f, loggedHours = 7.5f),
-                    Task(title = "Build Dashboard", description = "Create responsive admin dashboard", allocatedHours = 20f, loggedHours = 15f)
-                )
-            ),
-            Goal(
-                title = "Morning Workout",
-                description = "Exercise 5 days a week for 30 minutes",
-                progress = 60
-            ),
-            Goal(
-                title = "Read 12 Books This Year",
-                description = "Read at least one book per month",
-                progress = 42,
-                sharedWith = listOf("Mike Chen", "Emily Davis")
-            )
-        )
+/**
+ * GoalRepository implementation that delegates to the backend data source.
+ * This keeps UI depending on a single façade while allowing swap of data source.
+ */
+class GoalRepositoryImpl(
+    private val dataSource: GoalDataSource
+) : GoalRepository {
+
+    override fun observeGoals(ownerUserId: String?): Flow<List<Goal>> {
+        // Delegate to backend source; owner filtering defaults to all goals.
+        return dataSource.observeGoals(ownerUserId ?: "")
     }
 
-    fun addGoal(goal: Goal) {
-        _goals.update { it + goal }
+    override suspend fun getGoal(goalId: String): Goal? = dataSource.getGoal(goalId)
+
+    override suspend fun addGoal(goal: Goal) {
+        dataSource.createGoal(goal)
     }
 
-    fun updateGoal(updatedGoal: Goal) {
-        _goals.update { currentGoals ->
-            currentGoals.map { if (it.id == updatedGoal.id) updatedGoal else it }
-        }
+    override suspend fun updateGoal(goal: Goal) {
+        dataSource.updateGoal(goal)
     }
 
-    fun deleteGoal(goalId: String) {
-        _goals.update { currentGoals ->
-            currentGoals.filter { it.id != goalId }
-        }
-    }
-    
-    fun getGoal(goalId: String): Goal? {
-        return _goals.value.find { it.id == goalId }
+    override suspend fun deleteGoal(goalId: String) {
+        dataSource.deleteGoal(goalId)
     }
 }
