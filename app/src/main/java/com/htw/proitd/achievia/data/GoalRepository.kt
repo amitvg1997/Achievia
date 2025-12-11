@@ -1,44 +1,40 @@
 package com.htw.proitd.achievia.data
 
 import com.htw.proitd.achievia.model.Goal
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import java.util.UUID
 
 /**
- * Repository interface the UI will depend on.
- * Can be backed by Firebase or any other source.
+ * Simple in-memory repository facade used by the UI layer.
+ *
+ * This mirrors the previous Compose-facing API (exposing a StateFlow and
+ * synchronous CRUD helpers) while reusing the shared in-memory store. It keeps
+ * the screens compiling until a proper DI setup is added.
  */
-interface GoalRepository {
-    fun observeGoals(ownerUserId: String? = null): Flow<List<Goal>>
-    suspend fun getGoal(goalId: String): Goal?
-    suspend fun addGoal(goal: Goal)
-    suspend fun updateGoal(goal: Goal)
-    suspend fun deleteGoal(goalId: String)
-}
+object GoalRepository {
+    private val store = InMemoryBackendStore
 
-/**
- * GoalRepository implementation that delegates to the backend data source.
- * This keeps UI depending on a single façade while allowing swap of data source.
- */
-class GoalRepositoryImpl(
-    private val dataSource: GoalDataSource
-) : GoalRepository {
+    val goals: StateFlow<List<Goal>> = store.goalsState
 
-    override fun observeGoals(ownerUserId: String?): Flow<List<Goal>> {
-        // Delegate to backend source; owner filtering defaults to all goals.
-        return dataSource.observeGoals(ownerUserId ?: "")
+    fun getGoal(goalId: String): Goal? = store.goalsState.value.find { it.id == goalId }
+
+    fun addGoal(goal: Goal) {
+        store.goalsState.update { current ->
+            val goalWithId = if (goal.id.isNotEmpty()) goal else goal.copy(id = UUID.randomUUID().toString())
+            current + goalWithId
+        }
     }
 
-    override suspend fun getGoal(goalId: String): Goal? = dataSource.getGoal(goalId)
-
-    override suspend fun addGoal(goal: Goal) {
-        dataSource.createGoal(goal)
+    fun updateGoal(goal: Goal) {
+        store.goalsState.update { current ->
+            current.map { if (it.id == goal.id) goal else it }
+        }
     }
 
-    override suspend fun updateGoal(goal: Goal) {
-        dataSource.updateGoal(goal)
-    }
-
-    override suspend fun deleteGoal(goalId: String) {
-        dataSource.deleteGoal(goalId)
+    fun deleteGoal(goalId: String) {
+        store.goalsState.update { current ->
+            current.filterNot { it.id == goalId }
+        }
     }
 }
