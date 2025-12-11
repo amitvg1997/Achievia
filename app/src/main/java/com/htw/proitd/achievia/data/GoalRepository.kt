@@ -2,7 +2,6 @@ package com.htw.proitd.achievia.data
 
 import com.htw.proitd.achievia.model.Goal
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 /**
  * Repository interface the UI will depend on.
