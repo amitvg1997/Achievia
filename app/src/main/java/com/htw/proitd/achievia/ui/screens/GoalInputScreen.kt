@@ -15,10 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.htw.proitd.achievia.data.GoalRepository
-import com.htw.proitd.achievia.data.IGoalRepository
-import com.htw.proitd.achievia.data.tasks.ITaskService
-import com.htw.proitd.achievia.data.tasks.MockTaskService
+import com.htw.proitd.achievia.interfaces.GoalRepository
+import com.htw.proitd.achievia.interfaces.IGoalRepository
+import com.htw.proitd.achievia.interfaces.tasks.ITaskService
+import com.htw.proitd.achievia.interfaces.tasks.MockTaskService
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
 import kotlinx.coroutines.launch
@@ -190,12 +190,12 @@ fun GoalInputScreen(
                     scope.launch {
                         val result = taskService.addTaskToGoal(goalId, newTask)
                         when (result) {
-                            is com.htw.proitd.achievia.data.tasks.TaskResult.Success -> {
+                            is com.htw.proitd.achievia.interfaces.tasks.TaskResult.Success -> {
                                 tasks = tasks + newTask
                                 showTaskDialog = false
                                 errorMessage = null
                             }
-                            is com.htw.proitd.achievia.data.tasks.TaskResult.Error -> {
+                            is com.htw.proitd.achievia.interfaces.tasks.TaskResult.Error -> {
                                 errorMessage = result.message
                             }
                         }

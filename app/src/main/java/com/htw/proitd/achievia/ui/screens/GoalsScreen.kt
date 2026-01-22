@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.htw.proitd.achievia.data.GoalRepository
-import com.htw.proitd.achievia.data.IGoalRepository
+import com.htw.proitd.achievia.interfaces.GoalRepository
+import com.htw.proitd.achievia.interfaces.IGoalRepository
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 import kotlinx.coroutines.launch

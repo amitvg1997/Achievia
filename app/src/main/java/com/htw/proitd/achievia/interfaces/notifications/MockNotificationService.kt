@@ -1,11 +1,10 @@
-package com.htw.proitd.achievia.data.notifications
+package com.htw.proitd.achievia.interfaces.notifications
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.UUID
 
 /**
  * Mock implementation of INotificationService.

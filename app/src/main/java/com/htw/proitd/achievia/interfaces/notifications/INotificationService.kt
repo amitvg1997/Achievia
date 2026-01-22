@@ -1,4 +1,4 @@
-package com.htw.proitd.achievia.data.notifications
+package com.htw.proitd.achievia.interfaces.notifications
 
 import kotlinx.coroutines.flow.StateFlow
 

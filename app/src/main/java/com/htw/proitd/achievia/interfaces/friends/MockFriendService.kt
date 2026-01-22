@@ -1,6 +1,6 @@
-package com.htw.proitd.achievia.data.friends
+package com.htw.proitd.achievia.interfaces.friends
 
-import com.htw.proitd.achievia.data.GoalRepository
+import com.htw.proitd.achievia.interfaces.GoalRepository
 import com.htw.proitd.achievia.model.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

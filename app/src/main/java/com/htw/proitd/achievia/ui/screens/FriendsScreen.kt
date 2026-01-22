@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,7 +26,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -57,7 +55,7 @@ data class FriendUi(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendsScreen(
-    friendService: com.htw.proitd.achievia.data.friends.IFriendService = com.htw.proitd.achievia.data.friends.MockFriendService,
+    friendService: com.htw.proitd.achievia.interfaces.friends.IFriendService = com.htw.proitd.achievia.interfaces.friends.MockFriendService,
     onNavigateBack: () -> Unit
 ) {
     val friendsFlow = friendService.friends.collectAsState()
@@ -165,11 +163,11 @@ fun FriendsScreen(
                 scope.launch {
                     val result = friendService.addFriend(newFriend.email)
                     when (result) {
-                        is com.htw.proitd.achievia.data.friends.FriendResult.Success -> {
+                        is com.htw.proitd.achievia.interfaces.friends.FriendResult.Success -> {
                             showAddFriend = false
                             errorMessage = null
                         }
-                        is com.htw.proitd.achievia.data.friends.FriendResult.Error -> {
+                        is com.htw.proitd.achievia.interfaces.friends.FriendResult.Error -> {
                             errorMessage = result.message
                         }
                     }

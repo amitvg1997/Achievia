@@ -1,4 +1,4 @@
-package com.htw.proitd.achievia.data.auth
+package com.htw.proitd.achievia.interfaces.auth
 
 import com.htw.proitd.achievia.model.User
 

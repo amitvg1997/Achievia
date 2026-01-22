@@ -19,8 +19,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.htw.proitd.achievia.data.auth.IAuthService
-import com.htw.proitd.achievia.data.auth.MockAuthService
+import com.htw.proitd.achievia.interfaces.auth.IAuthService
+import com.htw.proitd.achievia.interfaces.auth.MockAuthService
 import kotlinx.coroutines.launch
 
 @Composable
@@ -143,10 +143,10 @@ fun LoginScreen(
                     val result = authService.login(email, password)
                     isLoading = false
                     when (result) {
-                        is com.htw.proitd.achievia.data.auth.AuthResult.Success -> {
+                        is com.htw.proitd.achievia.interfaces.auth.AuthResult.Success -> {
                             onLoginSuccess()
                         }
-                        is com.htw.proitd.achievia.data.auth.AuthResult.Error -> {
+                        is com.htw.proitd.achievia.interfaces.auth.AuthResult.Error -> {
                             errorMessage = result.message
                         }
                     }

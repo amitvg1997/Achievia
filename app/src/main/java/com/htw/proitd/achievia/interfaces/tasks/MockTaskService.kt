@@ -1,8 +1,7 @@
-package com.htw.proitd.achievia.data.tasks
+package com.htw.proitd.achievia.interfaces.tasks
 
-import com.htw.proitd.achievia.data.IGoalRepository
-import com.htw.proitd.achievia.data.GoalRepository
-import com.htw.proitd.achievia.model.Goal
+import com.htw.proitd.achievia.interfaces.IGoalRepository
+import com.htw.proitd.achievia.interfaces.GoalRepository
 import com.htw.proitd.achievia.model.Task
 import kotlinx.coroutines.delay
 

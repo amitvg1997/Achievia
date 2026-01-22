@@ -1,4 +1,4 @@
-package com.htw.proitd.achievia.data.tasks
+package com.htw.proitd.achievia.interfaces.tasks
 
 import com.htw.proitd.achievia.model.Task
 

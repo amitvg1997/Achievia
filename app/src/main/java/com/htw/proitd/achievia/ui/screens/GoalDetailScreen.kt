@@ -24,10 +24,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.htw.proitd.achievia.data.GoalRepository
-import com.htw.proitd.achievia.data.IGoalRepository
-import com.htw.proitd.achievia.data.tasks.ITaskService
-import com.htw.proitd.achievia.data.tasks.MockTaskService
+import com.htw.proitd.achievia.interfaces.GoalRepository
+import com.htw.proitd.achievia.interfaces.IGoalRepository
+import com.htw.proitd.achievia.interfaces.tasks.ITaskService
+import com.htw.proitd.achievia.interfaces.tasks.MockTaskService
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
 import kotlinx.coroutines.launch
@@ -105,11 +105,11 @@ fun GoalDetailScreen(
                     scope.launch {
                         val result = taskService.logHours(goalId, task.id, hoursToAdd)
                         when (result) {
-                            is com.htw.proitd.achievia.data.tasks.HoursLoggingResult.Success -> {
+                            is com.htw.proitd.achievia.interfaces.tasks.HoursLoggingResult.Success -> {
                                 taskToLogHours = null
                                 errorMessage = null
                             }
-                            is com.htw.proitd.achievia.data.tasks.HoursLoggingResult.Error -> {
+                            is com.htw.proitd.achievia.interfaces.tasks.HoursLoggingResult.Error -> {
                                 errorMessage = result.message
                             }
                         }

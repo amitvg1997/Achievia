@@ -1,10 +1,8 @@
-package com.htw.proitd.achievia.data.auth
+package com.htw.proitd.achievia.interfaces.auth
 
 import com.htw.proitd.achievia.model.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 /**

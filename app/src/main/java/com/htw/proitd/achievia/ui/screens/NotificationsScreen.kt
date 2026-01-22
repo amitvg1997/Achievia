@@ -24,8 +24,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,14 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.ui.theme.Orange500
-import com.htw.proitd.achievia.data.notifications.INotificationService
-import com.htw.proitd.achievia.data.notifications.MockNotificationService
-import com.htw.proitd.achievia.data.notifications.Notification as ServiceNotification
+import com.htw.proitd.achievia.interfaces.notifications.INotificationService
+import com.htw.proitd.achievia.interfaces.notifications.MockNotificationService
+import com.htw.proitd.achievia.interfaces.notifications.Notification as ServiceNotification
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import java.text.SimpleDateFormat
-import java.util.*
 
 data class NotificationUi(
     val id: String,
@@ -65,9 +60,9 @@ enum class NotificationType {
 private fun ServiceNotification.toNotificationUi(): NotificationUi {
     val timeAgo = formatTimeAgo(timestamp)
     val uiType = when (type) {
-        com.htw.proitd.achievia.data.notifications.NotificationType.FriendRequest -> NotificationType.FriendRequest
-        com.htw.proitd.achievia.data.notifications.NotificationType.SharedGoal -> NotificationType.SharedGoal
-        com.htw.proitd.achievia.data.notifications.NotificationType.SharedTask -> NotificationType.SharedTask
+        com.htw.proitd.achievia.interfaces.notifications.NotificationType.FriendRequest -> NotificationType.FriendRequest
+        com.htw.proitd.achievia.interfaces.notifications.NotificationType.SharedGoal -> NotificationType.SharedGoal
+        com.htw.proitd.achievia.interfaces.notifications.NotificationType.SharedTask -> NotificationType.SharedTask
         else -> NotificationType.SharedGoal // Default fallback
     }
     return NotificationUi(
