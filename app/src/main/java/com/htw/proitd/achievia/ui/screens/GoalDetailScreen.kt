@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
 import com.htw.proitd.achievia.data.IGoalRepository
+import com.htw.proitd.achievia.data.tasks.ITaskService
+import com.htw.proitd.achievia.data.tasks.MockTaskService
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
 import kotlinx.coroutines.launch
@@ -36,6 +39,7 @@ private val Orange500 = Color(0xFFFF6F43)
 @Composable
 fun GoalDetailScreen(
     goalRepository: IGoalRepository = GoalRepository,
+    taskService: ITaskService = MockTaskService,
     goalId: String?,
     onNavigateBack: () -> Unit
 ) {
@@ -44,6 +48,7 @@ fun GoalDetailScreen(
         goalId?.let { id -> goals.find { it.id == id } }
     }
     var taskToLogHours by remember { mutableStateOf<Task?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     Scaffold(topBar = {
@@ -59,7 +64,11 @@ fun GoalDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(goal.tasks) { task ->
-                    TaskCard(task = task, onLogHoursClick = { taskToLogHours = task })
+                    TaskCard(
+                        task = task,
+                        taskService = taskService,
+                        onLogHoursClick = { taskToLogHours = task }
+                    )
                 }
             }
         } else {
@@ -74,25 +83,39 @@ fun GoalDetailScreen(
         }
     }
 
+    if (errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Error") },
+            text = { Text(errorMessage!!) },
+            confirmButton = {
+                Button(onClick = { errorMessage = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
     taskToLogHours?.let { task ->
         LogHoursDialog(
             task = task,
             onDismiss = { taskToLogHours = null },
             onLogHours = { hoursToAdd ->
-                scope.launch {
-                    val updatedGoal = goal?.copy(
-                        tasks = goal.tasks.map {
-                            if (it.id == task.id) {
-                                it.copy(loggedHours = it.loggedHours + hoursToAdd)
-                            } else {
-                                it
+                if (goalId != null) {
+                    scope.launch {
+                        val result = taskService.logHours(goalId, task.id, hoursToAdd)
+                        when (result) {
+                            is com.htw.proitd.achievia.data.tasks.HoursLoggingResult.Success -> {
+                                taskToLogHours = null
+                                errorMessage = null
+                            }
+                            is com.htw.proitd.achievia.data.tasks.HoursLoggingResult.Error -> {
+                                errorMessage = result.message
                             }
                         }
-                    )
-                    if (updatedGoal != null) {
-                        goalRepository.updateGoal(updatedGoal)
                     }
-                    taskToLogHours = null
+                } else {
+                    errorMessage = "Goal ID is required"
                 }
             }
         )
@@ -174,8 +197,12 @@ fun GoalProgressIndicator(progress: Int) {
 }
 
 @Composable
-fun TaskCard(task: Task, onLogHoursClick: () -> Unit) {
-    val progress = if (task.allocatedHours > 0) (task.loggedHours / task.allocatedHours * 100).toInt() else 0
+fun TaskCard(
+    task: Task,
+    taskService: ITaskService = MockTaskService,
+    onLogHoursClick: () -> Unit
+) {
+    val progress = taskService.calculateTaskProgress(task)
 
     Card(
         shape = RoundedCornerShape(16.dp),

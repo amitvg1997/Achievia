@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
 import com.htw.proitd.achievia.data.IGoalRepository
+import com.htw.proitd.achievia.data.tasks.ITaskService
+import com.htw.proitd.achievia.data.tasks.MockTaskService
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
 import kotlinx.coroutines.launch
@@ -30,6 +32,7 @@ import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 @Composable
 fun GoalInputScreen(
     goalRepository: IGoalRepository = GoalRepository,
+    taskService: ITaskService = MockTaskService,
     goalId: String? = null,
     onNavigateBack: () -> Unit
 ) {
@@ -44,6 +47,7 @@ fun GoalInputScreen(
     var description by remember { mutableStateOf(existingGoal?.description ?: "") }
     var tasks by remember { mutableStateOf(existingGoal?.tasks ?: emptyList()) }
     var showTaskDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -100,14 +104,39 @@ fun GoalInputScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(tasks) { task ->
-                    TaskItem(task = task, onDelete = {
-                        tasks = tasks.filter { it.id != task.id }
-                    })
+                    TaskItem(
+                        task = task,
+                        onDelete = {
+                            scope.launch {
+                                if (goalId != null) {
+                                    val success = taskService.deleteTask(goalId, task.id)
+                                    if (success) {
+                                        tasks = tasks.filter { it.id != task.id }
+                                        errorMessage = null
+                                    } else {
+                                        errorMessage = "Failed to delete task"
+                                    }
+                                } else {
+                                    // For new goals, just remove from local list
+                                    tasks = tasks.filter { it.id != task.id }
+                                }
+                            }
+                        }
+                    )
                 }
             }
             
@@ -151,10 +180,31 @@ fun GoalInputScreen(
 
     if (showTaskDialog) {
         AddTaskDialog(
-            onDismiss = { showTaskDialog = false },
-            onAddTask = { newTask ->
-                tasks = tasks + newTask
+            onDismiss = { 
                 showTaskDialog = false
+                errorMessage = null
+            },
+            onAddTask = { newTask ->
+                if (goalId != null) {
+                    // For existing goals, use task service
+                    scope.launch {
+                        val result = taskService.addTaskToGoal(goalId, newTask)
+                        when (result) {
+                            is com.htw.proitd.achievia.data.tasks.TaskResult.Success -> {
+                                tasks = tasks + newTask
+                                showTaskDialog = false
+                                errorMessage = null
+                            }
+                            is com.htw.proitd.achievia.data.tasks.TaskResult.Error -> {
+                                errorMessage = result.message
+                            }
+                        }
+                    }
+                } else {
+                    // For new goals, just add to local list
+                    tasks = tasks + newTask
+                    showTaskDialog = false
+                }
             }
         )
     }
