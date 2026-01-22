@@ -1,0 +1,33 @@
+@startuml Logout_Flow
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+title Logout Flow
+
+actor User
+participant "GoalsScreen" as Goals
+participant "AchieviaNavGraph" as Nav
+participant "LoginScreen" as Login
+participant "GoalRepository" as Repo
+
+User -> Goals: Open navigation drawer
+User -> Goals: Click "Logout" menu item
+Goals -> Nav: onLogout()
+activate Nav
+Nav -> Nav: Clear back stack\n(popUpTo(0))
+Nav -> Login: Navigate to LoginScreen
+deactivate Nav
+activate Login
+Login --> User: Display login screen
+
+note right of Nav
+  Clears entire navigation
+  stack to prevent back
+  navigation to authenticated
+  screens after logout
+end note
+
+@enduml
+

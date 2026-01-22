@@ -1,0 +1,45 @@
+@startuml Registration_Flow
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+title User Registration Flow
+
+actor User
+participant "MainActivity" as Main
+participant "AchieviaNavGraph" as Nav
+participant "RegisterScreen" as Register
+participant "GoalRepository" as Repo
+participant "GoalsScreen" as Goals
+
+User -> Main: Launch App
+activate Main
+Main -> Nav: Initialize Navigation
+activate Nav
+Nav -> Register: Navigate to RegisterScreen
+activate Register
+
+User -> Register: Enter name, email, password
+User -> Register: Click "Register" button
+Register -> Repo: (Future: Create User Account)
+activate Repo
+Repo --> Register: User Created
+deactivate Repo
+
+Register -> Nav: onRegisterSuccess()
+Register -> Nav: Navigate to GoalsScreen\n(pop Login from stack)
+deactivate Register
+Nav -> Goals: Display GoalsScreen
+activate Goals
+Goals -> Repo: Observe goals StateFlow
+activate Repo
+Repo --> Goals: Emit goals list
+deactivate Repo
+Goals --> User: Display goals list
+deactivate Goals
+deactivate Nav
+deactivate Main
+
+@enduml
+

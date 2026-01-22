@@ -24,8 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
+import com.htw.proitd.achievia.data.IGoalRepository
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
+import kotlinx.coroutines.launch
 import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 
 private val Orange500 = Color(0xFFFF6F43)
@@ -33,14 +35,16 @@ private val Orange500 = Color(0xFFFF6F43)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalDetailScreen(
+    goalRepository: IGoalRepository = GoalRepository,
     goalId: String?,
     onNavigateBack: () -> Unit
 ) {
-    val goals by GoalRepository.goals.collectAsState()
+    val goals by goalRepository.goals.collectAsState()
     val goal = remember(goalId, goals) {
         goalId?.let { id -> goals.find { it.id == id } }
     }
     var taskToLogHours by remember { mutableStateOf<Task?>(null) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(topBar = {
         GoalDetailHeader(goal = goal, onNavigateBack = onNavigateBack)
@@ -75,19 +79,21 @@ fun GoalDetailScreen(
             task = task,
             onDismiss = { taskToLogHours = null },
             onLogHours = { hoursToAdd ->
-                val updatedGoal = goal?.copy(
-                    tasks = goal.tasks.map {
-                        if (it.id == task.id) {
-                            it.copy(loggedHours = it.loggedHours + hoursToAdd)
-                        } else {
-                            it
+                scope.launch {
+                    val updatedGoal = goal?.copy(
+                        tasks = goal.tasks.map {
+                            if (it.id == task.id) {
+                                it.copy(loggedHours = it.loggedHours + hoursToAdd)
+                            } else {
+                                it
+                            }
                         }
+                    )
+                    if (updatedGoal != null) {
+                        goalRepository.updateGoal(updatedGoal)
                     }
-                )
-                if (updatedGoal != null) {
-                    GoalRepository.updateGoal(updatedGoal)
+                    taskToLogHours = null
                 }
-                taskToLogHours = null
             }
         )
     }

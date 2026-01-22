@@ -1,0 +1,45 @@
+@startuml Login_Flow
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+title User Login Flow
+
+actor User
+participant "MainActivity" as Main
+participant "AchieviaNavGraph" as Nav
+participant "LoginScreen" as Login
+participant "GoalRepository" as Repo
+participant "GoalsScreen" as Goals
+
+User -> Main: Launch App
+activate Main
+Main -> Nav: Initialize Navigation
+activate Nav
+Nav -> Login: Navigate to LoginScreen
+activate Login
+
+User -> Login: Enter email and password
+User -> Login: Click "Sign In" button
+Login -> Repo: (Future: Validate Credentials)
+activate Repo
+Repo --> Login: Authentication Success
+deactivate Repo
+
+Login -> Nav: onLoginSuccess()
+Login -> Nav: Navigate to GoalsScreen\n(pop Login from stack)
+deactivate Login
+Nav -> Goals: Display GoalsScreen
+activate Goals
+Goals -> Repo: collectAsState() on goals
+activate Repo
+Repo --> Goals: Emit current goals list
+deactivate Repo
+Goals --> User: Display goals with progress
+deactivate Goals
+deactivate Nav
+deactivate Main
+
+@enduml
+

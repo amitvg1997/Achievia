@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.htw.proitd.achievia.ui.theme.Orange500
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 
 data class FriendUi(
     val id: String,
@@ -51,15 +54,14 @@ data class FriendUi(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FriendsScreen(onNavigateBack: () -> Unit) {
-    val friends = remember {
-        mutableStateListOf(
-            FriendUi("1", "Sarah Johnson", "sarah@example.com", 3),
-            FriendUi("2", "Mike Chen", "mike@example.com", 1),
-            FriendUi("3", "Emily Davis", "emily@example.com", 2),
-        )
-    }
+fun FriendsScreen(
+    friendService: com.htw.proitd.achievia.data.friends.IFriendService = com.htw.proitd.achievia.data.friends.MockFriendService,
+    onNavigateBack: () -> Unit
+) {
+    val friendsFlow = friendService.friends.collectAsState()
     var showAddFriend by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -114,15 +116,37 @@ fun FriendsScreen(onNavigateBack: () -> Unit) {
                 .background(Color(0xFFF5F7FB))
         ) {
             Spacer(modifier = Modifier.height(8.dp))
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(friends, key = { it.id }) { friend ->
+                items(friendsFlow.value, key = { it.id }) { user ->
+                    var sharedCount by remember { mutableStateOf(0) }
+                    LaunchedEffect(user.id) {
+                        sharedCount = friendService.getSharedGoalsCount(user.id)
+                    }
                     FriendCard(
-                        friend = friend,
-                        onDelete = { friends.remove(friend) }
+                        friend = FriendUi(
+                            id = user.id,
+                            name = user.name,
+                            email = user.email,
+                            sharedGoalsCount = sharedCount
+                        ),
+                        onDelete = {
+                            scope.launch {
+                                friendService.removeFriend(user.id)
+                            }
+                        }
                     )
                 }
             }
@@ -131,10 +155,23 @@ fun FriendsScreen(onNavigateBack: () -> Unit) {
 
     if (showAddFriend) {
         AddFriendDialog(
-            onDismiss = { showAddFriend = false },
-            onAddFriend = { newFriend ->
-                friends.add(newFriend.copy(id = (friends.size + 1).toString()))
+            onDismiss = { 
                 showAddFriend = false
+                errorMessage = null
+            },
+            onAddFriend = { newFriend ->
+                scope.launch {
+                    val result = friendService.addFriend(newFriend.email)
+                    when (result) {
+                        is com.htw.proitd.achievia.data.friends.FriendResult.Success -> {
+                            showAddFriend = false
+                            errorMessage = null
+                        }
+                        is com.htw.proitd.achievia.data.friends.FriendResult.Error -> {
+                            errorMessage = result.message
+                        }
+                    }
+                }
             }
         )
     }

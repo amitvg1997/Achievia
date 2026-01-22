@@ -1,0 +1,54 @@
+@startuml Notifications_Flow
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+title View Notifications Flow
+
+actor User
+participant "GoalsScreen" as Goals
+participant "AchieviaNavGraph" as Nav
+participant "NotificationsScreen" as Notifications
+participant "GoalRepository" as Repo
+
+User -> Goals: Open navigation drawer
+User -> Goals: Click "Notifications" menu item
+Goals -> Nav: onNavigateToNotifications()
+activate Nav
+Nav -> Notifications: Navigate to NotificationsScreen
+activate Notifications
+Notifications --> User: Display notifications list
+
+alt Friend Request Notification
+    User -> Notifications: Click "Accept" button
+    Notifications -> Repo: (Future: Accept friend request)
+    Notifications -> Notifications: Remove notification
+    Notifications --> User: Update notifications list
+else Shared Goal/Task Notification
+    User -> Notifications: Click "View" button
+    Notifications -> Nav: (Future: Navigate to shared goal)
+    Notifications -> Notifications: Remove notification
+    Notifications --> User: Update notifications list
+end
+
+User -> Notifications: Click dismiss icon
+Notifications -> Notifications: Remove notification
+Notifications --> User: Update notifications list
+
+User -> Notifications: Click back button
+Notifications -> Nav: onNavigateBack()
+deactivate Notifications
+Nav -> Goals: Return to GoalsScreen
+deactivate Nav
+
+note right of Notifications
+  Currently uses dummy data.
+  Future: Real-time notifications
+  from backend when goals/tasks
+  are shared or friend requests
+  are received
+end note
+
+@enduml
+

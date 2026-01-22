@@ -34,6 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.ui.theme.Orange500
+import com.htw.proitd.achievia.data.notifications.INotificationService
+import com.htw.proitd.achievia.data.notifications.MockNotificationService
+import com.htw.proitd.achievia.data.notifications.Notification as ServiceNotification
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import java.text.SimpleDateFormat
+import java.util.*
 
 data class NotificationUi(
     val id: String,
@@ -50,37 +58,55 @@ enum class NotificationType {
     SharedTask
 }
 
+/**
+ * Convert service Notification to UI NotificationUi
+ */
+private fun ServiceNotification.toNotificationUi(): NotificationUi {
+    val timeAgo = formatTimeAgo(timestamp)
+    val uiType = when (type) {
+        com.htw.proitd.achievia.data.notifications.NotificationType.FriendRequest -> NotificationType.FriendRequest
+        com.htw.proitd.achievia.data.notifications.NotificationType.SharedGoal -> NotificationType.SharedGoal
+        com.htw.proitd.achievia.data.notifications.NotificationType.SharedTask -> NotificationType.SharedTask
+        else -> NotificationType.SharedGoal // Default fallback
+    }
+    return NotificationUi(
+        id = id,
+        initials = userInitials,
+        name = userName,
+        message = message,
+        timeAgo = timeAgo,
+        type = uiType
+    )
+}
+
+/**
+ * Format timestamp to "time ago" string
+ */
+private fun formatTimeAgo(timestamp: Long): String {
+    val now = System.currentTimeMillis()
+    val diff = now - timestamp
+    val seconds = diff / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    val days = hours / 24
+
+    return when {
+        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
+        hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
+        minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
+        else -> "Just now"
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationsScreen(onNavigateBack: () -> Unit) {
-    val notifications = remember {
-        mutableStateListOf(
-            NotificationUi(
-                id = "1",
-                initials = "AM",
-                name = "Alex Martinez",
-                message = "sent you a friend request",
-                timeAgo = "2 hours ago",
-                type = NotificationType.FriendRequest
-            ),
-            NotificationUi(
-                id = "2",
-                initials = "SJ",
-                name = "Sarah Johnson",
-                message = "added you to a shared goal\n\"Complete React Course\"",
-                timeAgo = "5 hours ago",
-                type = NotificationType.SharedGoal
-            ),
-            NotificationUi(
-                id = "3",
-                initials = "MC",
-                name = "Mike Chen",
-                message = "shared a task with you\n\"Build Project Dashboard\"",
-                timeAgo = "1 day ago",
-                type = NotificationType.SharedTask
-            )
-        )
-    }
+fun NotificationsScreen(
+    notificationService: INotificationService = MockNotificationService,
+    onNavigateBack: () -> Unit
+) {
+    val notificationsFlow = notificationService.notifications.collectAsState()
+    val notifications = notificationsFlow.value.map { it.toNotificationUi() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -119,7 +145,12 @@ fun NotificationsScreen(onNavigateBack: () -> Unit) {
                 items(notifications, key = { it.id }) { notification ->
                     NotificationCard(
                         notification = notification,
-                        onDismiss = { notifications.remove(notification) }
+                        notificationService = notificationService,
+                        onDismiss = {
+                            scope.launch {
+                                notificationService.deleteNotification(notification.id)
+                            }
+                        }
                     )
                 }
             }
@@ -130,8 +161,10 @@ fun NotificationsScreen(onNavigateBack: () -> Unit) {
 @Composable
 private fun NotificationCard(
     notification: NotificationUi,
+    notificationService: INotificationService = MockNotificationService,
     onDismiss: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -211,7 +244,11 @@ private fun NotificationCard(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Button(
-                            onClick = onDismiss,
+                            onClick = {
+                                scope.launch {
+                                    notificationService.acceptFriendRequest(notification.id)
+                                }
+                            },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Orange500,
@@ -221,7 +258,11 @@ private fun NotificationCard(
                             Text("Accept")
                         }
                         OutlinedButton(
-                            onClick = onDismiss,
+                            onClick = {
+                                scope.launch {
+                                    notificationService.declineFriendRequest(notification.id)
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Decline")
@@ -235,7 +276,11 @@ private fun NotificationCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { /* TODO: navigate to detail */ },
+                            onClick = {
+                                scope.launch {
+                                    notificationService.markAsRead(notification.id)
+                                }
+                            },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Orange500,

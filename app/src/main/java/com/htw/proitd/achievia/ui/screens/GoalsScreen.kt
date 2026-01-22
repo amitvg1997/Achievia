@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
+import com.htw.proitd.achievia.data.IGoalRepository
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalsScreen(
+    goalRepository: IGoalRepository = GoalRepository,
     onNavigateToCreateGoal: () -> Unit,
     onNavigateToEditGoal: (String) -> Unit,
     onNavigateToGoalDetail: (String) -> Unit,
@@ -36,7 +38,7 @@ fun GoalsScreen(
     onNavigateToSettings: () -> Unit,
     onLogout: () -> Unit,
 ) {
-    val goals by GoalRepository.goals.collectAsState()
+    val goals by goalRepository.goals.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 

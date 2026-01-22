@@ -16,8 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.htw.proitd.achievia.data.GoalRepository
+import com.htw.proitd.achievia.data.IGoalRepository
 import com.htw.proitd.achievia.model.Goal
 import com.htw.proitd.achievia.model.Task
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
 import java.util.UUID
 import androidx.compose.ui.tooling.preview.Preview
 import com.htw.proitd.achievia.ui.theme.AchieviaTheme
@@ -26,10 +29,16 @@ import com.htw.proitd.achievia.ui.theme.AchieviaTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalInputScreen(
+    goalRepository: IGoalRepository = GoalRepository,
     goalId: String? = null,
     onNavigateBack: () -> Unit
 ) {
-    val existingGoal = remember(goalId) { goalId?.let { GoalRepository.getGoal(it) } }
+    val scope = rememberCoroutineScope()
+    var existingGoal by remember { mutableStateOf<Goal?>(null) }
+    
+    LaunchedEffect(goalId) {
+        existingGoal = goalId?.let { goalRepository.getGoal(it) }
+    }
     
     var title by remember { mutableStateOf(existingGoal?.title ?: "") }
     var description by remember { mutableStateOf(existingGoal?.description ?: "") }
@@ -114,20 +123,22 @@ fun GoalInputScreen(
                 }
                 Button(
                     onClick = {
-                        val newGoal = Goal(
-                            id = existingGoal?.id ?: UUID.randomUUID().toString(),
-                            title = title,
-                            description = description,
-                            progress = existingGoal?.progress ?: 0,
-                            tasks = tasks,
-                            sharedWith = existingGoal?.sharedWith ?: emptyList()
-                        )
-                        if (existingGoal != null) {
-                            GoalRepository.updateGoal(newGoal)
-                        } else {
-                            GoalRepository.addGoal(newGoal)
+                        scope.launch {
+                            val newGoal = Goal(
+                                id = existingGoal?.id ?: UUID.randomUUID().toString(),
+                                title = title,
+                                description = description,
+                                progress = existingGoal?.progress ?: 0,
+                                tasks = tasks,
+                                sharedWith = existingGoal?.sharedWith ?: emptyList()
+                            )
+                            if (existingGoal != null) {
+                                goalRepository.updateGoal(newGoal)
+                            } else {
+                                goalRepository.addGoal(newGoal)
+                            }
+                            onNavigateBack()
                         }
-                        onNavigateBack()
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F43))

@@ -1,0 +1,53 @@
+@startuml Create_Goal_Flow
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+title Create New Goal Flow
+
+actor User
+participant "GoalsScreen" as Goals
+participant "AchieviaNavGraph" as Nav
+participant "GoalInputScreen" as Input
+participant "GoalRepository" as Repo
+participant "Goal Model" as Goal
+
+User -> Goals: Click "Add New Goal" FAB
+Goals -> Nav: onNavigateToCreateGoal()
+activate Nav
+Nav -> Input: Navigate to CreateGoal route
+activate Input
+
+User -> Input: Enter goal title
+User -> Input: Enter description
+User -> Input: Click "Add Task" button
+Input -> Input: Show AddTaskDialog
+User -> Input: Enter task details\n(title, description, hours)
+Input -> Input: Add task to local list
+
+User -> Input: Click "Save Changes"
+Input -> Goal: Create new Goal object
+activate Goal
+Goal --> Input: Goal created
+deactivate Goal
+Input -> Repo: addGoal(newGoal)
+activate Repo
+Repo -> Repo: Update StateFlow
+Repo --> Input: Goal added
+deactivate Repo
+
+Input -> Nav: onNavigateBack()
+deactivate Input
+Nav -> Goals: Return to GoalsScreen
+activate Goals
+Goals -> Repo: StateFlow emits update
+activate Repo
+Repo --> Goals: New goal in list
+deactivate Repo
+Goals --> User: Display updated goals list
+deactivate Goals
+deactivate Nav
+
+@enduml
+

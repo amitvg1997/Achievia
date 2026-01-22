@@ -20,9 +20,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.htw.proitd.achievia.data.auth.IAuthService
+import com.htw.proitd.achievia.data.auth.MockAuthService
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
+    authService: IAuthService = MockAuthService,
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
@@ -30,6 +34,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -122,17 +129,53 @@ fun RegisterScreen(
             )
         )
 
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onRegisterSuccess,
+            onClick = {
+                if (name.isBlank() || email.isBlank() || password.isBlank()) {
+                    errorMessage = "Please fill in all fields"
+                    return@Button
+                }
+                isLoading = true
+                errorMessage = null
+                scope.launch {
+                    val result = authService.register(name, email, password)
+                    isLoading = false
+                    when (result) {
+                        is com.htw.proitd.achievia.data.auth.AuthResult.Success -> {
+                            onRegisterSuccess()
+                        }
+                        is com.htw.proitd.achievia.data.auth.AuthResult.Error -> {
+                            errorMessage = result.message
+                        }
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F43)),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            enabled = !isLoading
         ) {
-            Text("Register", fontSize = 16.sp)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White
+                )
+            } else {
+                Text("Register", fontSize = 16.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))

@@ -7,9 +7,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-object GoalRepository {
+/**
+ * Mock implementation of IGoalRepository.
+ * Uses in-memory storage with StateFlow for reactive updates.
+ */
+object GoalRepository : IGoalRepository {
     private val _goals = MutableStateFlow<List<Goal>>(emptyList())
-    val goals: StateFlow<List<Goal>> = _goals.asStateFlow()
+    override val goals: StateFlow<List<Goal>> = _goals.asStateFlow()
 
     init {
         // Seed with some dummy data
@@ -38,23 +42,23 @@ object GoalRepository {
         )
     }
 
-    fun addGoal(goal: Goal) {
+    override suspend fun addGoal(goal: Goal) {
         _goals.update { it + goal }
     }
 
-    fun updateGoal(updatedGoal: Goal) {
+    override suspend fun updateGoal(updatedGoal: Goal) {
         _goals.update { currentGoals ->
             currentGoals.map { if (it.id == updatedGoal.id) updatedGoal else it }
         }
     }
 
-    fun deleteGoal(goalId: String) {
+    override suspend fun deleteGoal(goalId: String) {
         _goals.update { currentGoals ->
             currentGoals.filter { it.id != goalId }
         }
     }
     
-    fun getGoal(goalId: String): Goal? {
+    override suspend fun getGoal(goalId: String): Goal? {
         return _goals.value.find { it.id == goalId }
     }
 }
